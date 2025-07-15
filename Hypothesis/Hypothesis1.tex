@@ -1,0 +1,55 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[hidelinks]{hyperref}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{natbib}
+\bibliographystyle{../../readings/acl_natbib}
+
+\begin{document}
+
+\title{Hypothesis - Memorization in the ACT Model}
+\author{}
+\date{}
+\maketitle
+
+\section*{Information Flow in ACT Model}
+\textbf{Input:} Images from two cameras: $I_{\text{top}}, I_{\text{lat}} \in \mathbb{R}^{480 \times 640 \times 3}$ and joint angles $q \in \mathbb{R}^6$. Images are processed by ResNet: 
+\[ V_{\text{top}} = \text{ResNet}(I_{\text{top}}), \quad V_{\text{lat}} = \text{ResNet}(I_{\text{lat}}), \quad V_{\text{top}}, V_{\text{lat}} \in \mathbb{R}^{300 \times 512}.
+\]
+
+\textbf{Tokenization:} Flattened camera features ($600$ "pixel tokens" - 300 for each camera), arm state token\footnote{Why not create six tokens, one for each joint angle? This might help the model better understand the arm's configuration.} 
+($q \in \mathbb{R}^{512}$), and condition token
+\footnote{We focuses here only on the model's inference process. During training, an additional encoder processes samples from the teleoperation setup, producing a latent variable $z$. This variable serves as a condition for the decoder, which takes the inputs described here. The model's objective is to reconstruct teleoperation actions — a non-trivial choice, as the CVAE framework was used instead of a more direct approach to predict the next steps.}($c \in \mathbb{R}^{512}$) form $602$ tokens of dimension $512$.
+
+\textbf{Transformer Encoding:} The $602$ tokens are processed through $3$ Transformer encoder layers, enabling global information flow:
+\[ 602 \times 512 \rightarrow 602 \times 512.
+\]
+
+\textbf{Action Vector Update:} A zero-initialized action vector ($a \in \mathbb{R}^{512}$) is updated using cross-attention with encoder output and an MLP:
+\[ a \in \mathbb{R}^{512} \rightarrow \text{Cross-attention with the 602 tokens from the encoder} \rightarrow \text{MLP} \rightarrow \mathbb{R}^{6} \text{ (robot movement)}.
+\]
+
+\section*{Hypothesis: Memorization in ACT}
+\textbf{Hypothesis:} The MLP layer in the decoder part of the ACT (\cite{Zhao2023Apr}) model memorize exact actions instead of generalizing. 
+During inference, \textbf{the action vector after cross-attention \footnote{
+Observation: Attention maps suggest only a subset of tokens (5-20) receive high attention scores, varying across different input images. This indicates that during encoding, environmental information is represented by a small subset of the $602$ tokens. Interestingly, the arm state token is not among those receiving high weights, implying that pixel tokens absorb and convey necessary arm state information to the action vector.
+} contains complete environmental information (e.g., cube location, gripper state) even of unseen training examples}. 
+However, the MLP acts as a "lookup table" of actions rather than applying general rules for novel scenarios.
+(This is based on observationa from \cite{Geva2020Dec,Meng2022Feb} that the mlp layers in transformers is where memories are stored.)
+
+\section*{Validation Plan}
+1.\textbf{Probing Action Vector:} Train linear classifiers on the action vector to verify if it encodes all relevant environmental details.
+
+2. \textbf{Generalization to Novel Scenes:} Test whether the action vector generalizes to new, unseen cube positions.
+
+3. \textbf{Visualization:} Adapt techniques from \cite{Toker2024Mar} ("Diffusion lens) to visualize hidden states of the action vector and analyze stored information.
+
+\textbf{Future Steps:} Investigate whether the MLP memorizes steps in a specific environment representation or if it applies generalizable rules.
+
+\bibliography{../../readings/citations}
+
+\end{document}
