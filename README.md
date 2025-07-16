@@ -2,13 +2,9 @@
 
 Train a robotic arm to pick up a cube and place it in a box autonomously, and explore how the model makes decisions using mechanistic interpretability techniques.
 
----
-
 ## Project Overview
 
 AutonomousArm is a research project focused on developing and analyzing a robotic arm controlled by a Transformer-based model. The goal is to understand not only how to achieve autonomous movement, but also how the underlying model represents and memorizes information.
-
----
 
 ## Building the Robotic Arm
 
@@ -23,8 +19,6 @@ We built a robotic arm using the [lerobot guide](https://huggingface.co/lerobot)
 **Assembled arm:**  
 ![Assembled arm](demos/setup.jpeg)
 
----
-
 ## Collecting Data and Training the Model
 
 We used a teleoperation setup to collect data for training the model.  
@@ -33,13 +27,10 @@ We used a teleoperation setup to collect data for training the model.
 **Autonomous arm demo:**  
 [Watch here](demos/autonomusArm.mp4)
 
----
 
 ## Mechanistic Interpretability Exploration
 
 We applied mechanistic interpretability techniques to analyze how the model makes decisions. The focus was on understanding how the model encodes information about the environment and how it generalizes actions.
-
----
 
 ## Model Architecture
 
@@ -57,16 +48,12 @@ We applied mechanistic interpretability techniques to analyze how the model make
 
 Reference: [ACT paper](https://arxiv.org/abs/2304.13705)
 
----
-
-## 💡 Research Hypothesis
+## Research Hypothesis
 
 > The MLP layer in the decoder memorizes exact actions rather than generalizing, acting as a "lookup table" for robot movements.  
 > Attention maps show only a subset of tokens receive high scores, and arm state information is absorbed by pixel tokens.
 
----
-
-## 🧪 Validation Plan
+##  Validation Plan
 
 1. **ResNet Feature Extraction:**  
    Verify that the ResNet features encode all necessary information for the model to perform actions without relying on attention layers.  
@@ -75,8 +62,6 @@ Reference: [ACT paper](https://arxiv.org/abs/2304.13705)
    Train linear classifiers to verify if the action vector encodes all relevant environmental details.
 3. **Fine-tuning Only MLP Layer:**  
    Fine-tune the model on new locations by freezing all layers except the MLP to see if it can adapt to lift cubes from those locations, confirming the hypothesis of memorization.
-
----
 
 ## Results
 
